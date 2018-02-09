@@ -347,9 +347,9 @@ def installOpenstackCompute(master) {
     def salt = new com.mirantis.mk.Salt()
     // Configure compute nodes
     if (salt.testTarget(master, 'I@nova:compute')) {
-	retry(2) {
-	    salt.enforceHighstateWithExclude(master, 'I@nova:compute', 'opencontrail.client')
-	}
+        retry(2) {
+            salt.enforceHighstateWithExclude(master, 'I@nova:compute', 'opencontrail.client')
+        }
     }
 }
 
@@ -383,9 +383,13 @@ def installContrailCompute(master) {
     // Provision opencontrail virtual routers
 
     // Generate script /usr/lib/contrail/if-vhost0 for up vhost0
-    salt.enforceStateWithExclude(master, "I@opencontrail:compute", "opencontrail", "opencontrail.client")
+    if (salt.testTarget(master, 'I@opencontrail:compute')) {
+        salt.enforceStateWithExclude(master, "I@opencontrail:compute", "opencontrail", "opencontrail.client")
+    }
 
-    salt.cmdRun(master, 'I@nova:compute', 'exec 0>&-; exec 1>&-; exec 2>&-; nohup bash -c "ip link | grep vhost && echo no_reboot || sleep 5 && reboot & "', false)
+    if (salt.testTarget(master, 'I@nova:compute')) {
+        salt.cmdRun(master, 'I@nova:compute', 'exec 0>&-; exec 1>&-; exec 2>&-; nohup bash -c "ip link | grep vhost && echo no_reboot || sleep 5 && reboot & "', false)
+    }
 
     if (salt.testTarget(master, 'I@opencontrail:compute')) {
         sleep(300)
