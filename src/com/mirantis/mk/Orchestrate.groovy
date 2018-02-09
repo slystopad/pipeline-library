@@ -346,8 +346,10 @@ def installOpenstackNetwork(master, physical = "false") {
 def installOpenstackCompute(master) {
     def salt = new com.mirantis.mk.Salt()
     // Configure compute nodes
-    retry(2) {
-        salt.enforceHighstateWithExclude(master, 'I@nova:compute', 'opencontrail.client')
+    if (salt.testTarget(master, 'I@nova:compute')) {
+	retry(2) {
+	    salt.enforceHighstateWithExclude(master, 'I@nova:compute', 'opencontrail.client')
+	}
     }
 }
 
